@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Charactor Rain</title>
+</head>
+
+<body>
+<canvas id="canvas" width="640" height="480" style="background: black">ooch!</canvas>
+<script>
+    "use strict";
+
+    function getRand(max, min) {
+        min = min || 0;
+        return (min + Math.random() * (max - min)) | 0;
+    }
+
+    function Char( x, n) {
+        this.X = x;
+        this.Y = 0;
+        this.clr = n === 0 ? 'white' : 'rgba(0,' + ((255 * (1 - n / 25)) | 0) +',0,1)';
+        this.shadow = n === 0;
+    }
+
+    Char.prototype.draw = function Draw(ctx) {
+        if (this.shadow) {
+            ctx.shadowBlur = 8;
+        } else {
+            ctx.shadowBlur = 0;
+        }
+        ctx.fillStyle = this.clr;
+        ctx.fillText(String.fromCharCode(getRand(126, 33)), this.X, this.Y);
+        this.Y += 15;
+        if (this.Y >= ctx.canvas.height) {
+            this.Y = 0;
+        }
+    };
+
+    (function main() {
+        var columnCount = 24;
+        var columns = [], startTimes = [];
+        for (var t = columnCount; t--; ) {
+            columns.push([]);
+        }
+        for (var t = columnCount; t--; ) {
+            startTimes.push(getRand(0, -30));
+        }
+        var canvas = document.getElementById("canvas");
+        var canvasCtx = canvas.getContext("2d");
+        var buffer = document.createElement("canvas");
+        buffer.width = canvas.width;
+        buffer.height = canvas.height;
+        var ctx = buffer.getContext("2d");
+
+        function Repaint() {
+            ctx.fillStyle = "Black";
+            ctx.clearRect(0, 0, buffer.width, buffer.height);
+            columns.forEach(function(column, idx) {
+                if (startTimes[idx] < 25) {
+                    if (startTimes[idx] >= 0) {
+                        column.push(new Char(25 * (idx + 1), startTimes[idx]));
+                    }
+                    ++startTimes[idx];
+                }
+            });
+            columns.forEach(function(column) {
+                column.forEach(function (char) {
+                    char.draw(ctx);
+                });
+            });
+            canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+            canvasCtx.drawImage(buffer, 0, 0);
+        }
+
+        ctx.font = 'bold 15px "Helvetica Neue", Arial';
+        ctx.textAlign = 'center';
+        ctx.shadowColor = "yellow";
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+        setInterval(Repaint, 50);
+    })();
+</script>
+</body>
+</html>
